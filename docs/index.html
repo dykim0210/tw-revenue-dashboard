@@ -40,8 +40,7 @@ aside .sub{font-size:11px;color:var(--dim);padding:3px 18px 12px}
 .co .nm span{font-size:11px;color:var(--dim)}
 .pill{font-size:9px;font-weight:800;letter-spacing:.04em;color:#fff;
   background:var(--new);border-radius:99px;padding:2px 6px;flex:none}
-.heat{display:grid;grid-template-columns:repeat(12,6px);gap:2px;flex:none}
-.heat i{width:6px;height:13px;border-radius:1px;background:#E2E5EB}
+.yoytag{flex:none;font-size:12px;font-weight:600;min-width:56px;text-align:right}
 .star{flex:none;font-size:15px;color:#C4CAD5;cursor:pointer;padding:2px 4px;user-select:none}
 .star.on{color:var(--gold)}
 .star:hover{color:var(--gold)}
@@ -116,24 +115,14 @@ function toggleFav(ev, code){
 const fmt=(v,dp=1)=>v==null?'–':v.toLocaleString('ko-KR',{minimumFractionDigits:dp,maximumFractionDigits:dp});
 const pct=v=>v==null?'–':(v>0?'+':'')+v.toFixed(1)+'%';
 const cls=v=>v==null?'':(v>=0?'up':'dn');
-const heatColor=v=>{
-  if(v==null)return '#E2E5EB';
-  const a=Math.min(Math.abs(v)/60,1)*.85+.15;
-  return v>=0?`rgba(214,69,61,${a})`:`rgba(30,122,99,${a})`;
-};
 
 function rowHTML(c){
   const isNew = c.dates[c.dates.length-1] === D.latest_month;
-  const yy = c.yoy.slice(-12), dd = c.dates.slice(-12);
-  const padded = Array(Math.max(0,12-yy.length)).fill(null).concat(yy);
-  const cells = padded.map((v,i)=>{
-    const d = dd[i-(12-yy.length)] || '';
-    return `<i style="background:${heatColor(v)}" title="${v==null?'':d+' '+pct(v)}"></i>`;
-  }).join('');
+  const lastYoY = c.yoy[c.yoy.length-1];
   return `<div class="co ${c.code===S.code?'active':''}" data-code="${c.code}" onclick="pick('${c.code}')">
     ${isNew?'<span class="pill">NEW</span>':''}
     <div class="nm"><b>${c.name_ko||c.name_zh}</b><span class="num">${c.code}</span></div>
-    <div class="heat" title="최근 12개월 YoY">${cells}</div>
+    <span class="num yoytag ${cls(lastYoY)}" title="${D.latest_month} YoY">${pct(lastYoY)}</span>
     <span class="star ${FAVS.has(c.code)?'on':''}" onclick="toggleFav(event,'${c.code}')" title="즐겨찾기">★</span>
   </div>`;
 }
