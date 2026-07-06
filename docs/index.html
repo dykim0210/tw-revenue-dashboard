@@ -9,73 +9,79 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root{
-  --bg:#F3F4F1; --surface:#FFFFFF; --ink:#181C22; --muted:#71767E;
-  --line:#E3E5E0; --bar:#2C4363; --bar-soft:#B9C6D8;
-  --up:#C43C2E; --dn:#1E7A63; --gold:#B98A1F;
+  --bg:#F4F5F7; --side:#FFFFFF; --surface:#FFFFFF; --surface2:#F8F9FB;
+  --line:#E4E7EC; --ink:#1B2028; --muted:#697386; --dim:#98A1B2;
+  --accent:#2F54D0;            /* 섹터 헤더 · 선택 종목 */
+  --up:#D6453D; --dn:#1E7A63;  /* 상승=빨강(아시아 관례) */
+  --new:#E5484D; --gold:#B8860B; --bar:#2C4363;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--ink);
-  font-family:"Pretendard",-apple-system,sans-serif;font-size:14px}
+body{background:var(--bg);color:var(--ink);font-family:"Pretendard",-apple-system,sans-serif;font-size:14px}
 .num{font-family:"IBM Plex Mono",monospace;font-feature-settings:"tnum"}
 .up{color:var(--up)} .dn{color:var(--dn)}
+::-webkit-scrollbar{width:9px}::-webkit-scrollbar-thumb{background:#CBD2DC;border-radius:9px}
 
-.app{display:grid;grid-template-columns:300px 1fr;min-height:100vh}
-/* ---------- sidebar ---------- */
-aside{background:var(--ink);color:#E8EAE6;padding:20px 0;overflow-y:auto;
-  height:100vh;position:sticky;top:0}
-aside h1{font-size:16px;font-weight:800;letter-spacing:-.02em;padding:0 18px 2px}
-aside .sub{font-size:11px;color:#8B919B;padding:0 18px 14px}
-.co{display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;
+.app{display:grid;grid-template-columns:290px 1fr;min-height:100vh}
+/* ================= 사이드바 ================= */
+aside{background:var(--side);border-right:1px solid var(--line);box-shadow:1px 0 0 rgba(16,24,40,.02);
+  height:100vh;position:sticky;top:0;overflow-y:auto;padding:18px 0 30px}
+aside h1{font-size:16px;font-weight:800;letter-spacing:-.02em;padding:0 18px}
+aside .sub{font-size:11px;color:var(--dim);padding:3px 18px 12px}
+.grp{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:800;
+  color:var(--accent);letter-spacing:.02em;padding:16px 18px 7px}
+.grp small{color:var(--dim);font-weight:600}
+.co{display:flex;align-items:center;gap:9px;padding:10px 14px 10px 18px;cursor:pointer;
   border-left:3px solid transparent}
-.co:hover{background:#232833}
-.co.active{background:#2A3140;border-left-color:var(--up)}
-.co .nm{flex:1;min-width:0}
-.co .nm b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.co .nm span{font-size:10.5px;color:#8B919B}
-.heat{display:grid;grid-template-columns:repeat(12,7px);gap:2px}
-.heat i{width:7px;height:14px;border-radius:1px;background:#3A4150}
-.grp{font-size:10.5px;color:#7C828C;letter-spacing:.08em;padding:14px 18px 4px;
-  text-transform:uppercase}
-/* ---------- main ---------- */
-main{padding:26px 30px;max-width:1100px}
-.topbar{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:4px}
-.topbar h2{font-size:24px;font-weight:800;letter-spacing:-.03em}
+.co:hover{background:#F2F4F8}
+.co.active{background:#E9EEFB;border-left-color:var(--accent)}
+.co.active .nm b{color:var(--accent)}
+.co .nm{flex:1;min-width:0;display:flex;align-items:baseline;gap:7px}
+.co .nm b{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.co .nm span{font-size:11px;color:var(--dim)}
+.pill{font-size:9px;font-weight:800;letter-spacing:.04em;color:#fff;
+  background:var(--new);border-radius:99px;padding:2px 6px;flex:none}
+.heat{display:grid;grid-template-columns:repeat(12,6px);gap:2px;flex:none}
+.heat i{width:6px;height:13px;border-radius:1px;background:#E2E5EB}
+.star{flex:none;font-size:15px;color:#C4CAD5;cursor:pointer;padding:2px 4px;user-select:none}
+.star.on{color:var(--gold)}
+.star:hover{color:var(--gold)}
+
+/* ================= 메인 ================= */
+main{padding:26px 32px;max-width:1120px}
+.topbar{display:flex;align-items:baseline;gap:13px;flex-wrap:wrap}
+.topbar h2{font-size:25px;font-weight:800;letter-spacing:-.03em}
 .topbar .zh{color:var(--muted);font-size:15px}
-.topbar .tag{font-size:11px;border:1px solid var(--line);background:var(--surface);
-  border-radius:99px;padding:2px 9px;color:var(--muted)}
-.meta{color:var(--muted);font-size:12px;margin-bottom:18px}
+.tag{font-size:11px;border:1px solid var(--line);background:var(--surface);
+  border-radius:99px;padding:2px 10px;color:var(--muted)}
+.meta{color:var(--dim);font-size:12px;margin:5px 0 16px}
+.badge{display:inline-block;font-size:10.5px;font-weight:800;color:var(--gold);
+  border:1px solid var(--gold);border-radius:4px;padding:1px 7px;margin-left:8px;vertical-align:2px}
 .controls{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
-.controls select,.controls button{font:inherit;font-size:12.5px;padding:5px 10px;
-  border:1px solid var(--line);background:var(--surface);border-radius:6px;cursor:pointer}
-.controls .lbl{font-size:12px;color:var(--muted)}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-  gap:10px;margin-bottom:18px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
-.card .k{font-size:11px;color:var(--muted);margin-bottom:5px}
+.controls select{font:inherit;font-size:12.5px;padding:6px 10px;color:var(--ink);
+  border:1px solid var(--line);background:var(--surface);border-radius:7px;cursor:pointer}
+.controls .lbl{font-size:12px;color:var(--dim)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 15px}
+.card .k{font-size:11px;color:var(--muted);margin-bottom:6px}
 .card .v{font-size:19px;font-weight:700}
 .card .v small{font-size:11px;font-weight:400;color:var(--muted)}
-.badge{display:inline-block;font-size:10.5px;font-weight:700;color:var(--gold);
-  border:1px solid var(--gold);border-radius:4px;padding:1px 6px;margin-left:6px;vertical-align:2px}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;
-  padding:16px 18px;margin-bottom:16px}
-.panel h3{font-size:13px;font-weight:700;margin-bottom:10px;letter-spacing:-.01em}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:13px;
+  padding:17px 19px;margin-bottom:16px}
+.panel h3{font-size:13px;font-weight:700;margin-bottom:12px;color:var(--muted)}
 .chartbox{position:relative;height:320px}
 table{width:100%;border-collapse:collapse;font-size:12.5px}
-th{font-size:11px;color:var(--muted);font-weight:600;text-align:right;
-  padding:6px 8px;border-bottom:1px solid var(--line)}
+th{font-size:11px;color:var(--dim);font-weight:600;text-align:right;
+  padding:7px 8px;border-bottom:1px solid var(--line)}
 th:first-child,td:first-child{text-align:left}
-td{padding:6px 8px;text-align:right;border-bottom:1px solid #EFF0ED}
-tr:hover td{background:#F7F8F5}
-.empty{color:var(--muted);padding:60px;text-align:center}
-@media(max-width:860px){.app{grid-template-columns:1fr}aside{height:auto;position:static}}
+td{padding:7px 8px;text-align:right;border-bottom:1px solid #EEF0F4}
+tr:hover td{background:#F5F7FA}
+.empty{color:var(--muted);padding:70px;text-align:center}
+@media(max-width:880px){.app{grid-template-columns:1fr}aside{height:auto;position:static;max-height:45vh}main{padding:18px 14px}}
 </style>
 </head>
 <body>
 <div class="app">
-  <aside id="sidebar">
-    <h1>대만 월매출 트래커</h1>
-    <div class="sub" id="genAt">데이터 로딩 중…</div>
-  </aside>
+  <aside><h1>대만 월매출 트래커</h1><div class="sub" id="genAt">데이터 로딩 중…</div><div id="colist"></div></aside>
   <main id="main"><div class="empty">data.js 를 불러오는 중입니다…</div></main>
 </div>
 
@@ -84,51 +90,76 @@ tr:hover td{background:#F7F8F5}
 const D = window.REVENUE_DATA;
 const S = { code:null, unit:'b', from:null, charts:[] };
 const UNITS = { b:{div:1e6,label:'십억 NTD',dp:1}, e:{div:1e5,label:'억 NTD',dp:0}, k:{div:1,label:'천 NTD',dp:0} };
+
+/* ---- 섹터 -> 대분류 매핑 (watchlist의 세부 섹터를 큰 그룹으로 묶음) ---- */
+const GROUP_ORDER = ['★ 즐겨찾기','메모리','파운드리','팹리스(비메모리)','후공정(OSAT)','AI서버 / EMS','기타'];
+function groupOf(sector){
+  const s = sector || '';
+  if (s.includes('메모리') && !s.includes('컨트롤러')) return '메모리';
+  if (s.includes('파운드리') || s.includes('화합물')) return '파운드리';
+  if (s.includes('팹리스') || s.includes('IP') || s.includes('컨트롤러')) return '팹리스(비메모리)';
+  if (s.includes('OSAT')) return '후공정(OSAT)';
+  if (s.includes('서버') || s.includes('EMS') || s.includes('ODM')) return 'AI서버 / EMS';
+  return '기타';
+}
+
+/* ---- 즐겨찾기 (브라우저에 저장) ---- */
+let FAVS = new Set();
+try { FAVS = new Set(JSON.parse(localStorage.getItem('twrev_favs') || '[]')); } catch(e){}
+function toggleFav(ev, code){
+  ev.stopPropagation();
+  FAVS.has(code) ? FAVS.delete(code) : FAVS.add(code);
+  try { localStorage.setItem('twrev_favs', JSON.stringify([...FAVS])); } catch(e){}
+  sidebar();
+}
+
 const fmt=(v,dp=1)=>v==null?'–':v.toLocaleString('ko-KR',{minimumFractionDigits:dp,maximumFractionDigits:dp});
 const pct=v=>v==null?'–':(v>0?'+':'')+v.toFixed(1)+'%';
 const cls=v=>v==null?'':(v>=0?'up':'dn');
 const heatColor=v=>{
-  if(v==null)return '#3A4150';
+  if(v==null)return '#E2E5EB';
   const a=Math.min(Math.abs(v)/60,1)*.85+.15;
-  return v>=0?`rgba(214,86,70,${a})`:`rgba(46,150,122,${a})`;
+  return v>=0?`rgba(214,69,61,${a})`:`rgba(30,122,99,${a})`;
 };
 
-function sidebar(){
-  const el=document.getElementById('sidebar');
-  document.getElementById('genAt').textContent=
-    `최신월 ${D.latest_month} · 생성 ${D.generated_at}`;
-  const bySector={};
-  D.companies.forEach(c=>{(bySector[c.sector||'기타']??=[]).push(c)});
-  let html='';
-  for(const [sec,list] of Object.entries(bySector)){
-    html+=`<div class="grp">${sec}</div>`;
-    for(const c of list){
-      const yy=c.yoy.slice(-12);
-      const padded=Array(Math.max(0,12-yy.length)).fill(null).concat(yy);
-      const cells=padded.map((v,i)=>{
-        const d=c.dates.slice(-12)[i-(12-yy.length)]||'';
-        return `<i style="background:${heatColor(v)}" title="${v==null?'':d+' '+pct(v)}"></i>`;
-      }).join('');
-      html+=`<div class="co" data-code="${c.code}" onclick="pick('${c.code}')">
-        <div class="nm"><b>${c.name_ko||c.name_zh}</b><span class="num">${c.code} · ${c.market.toUpperCase()}</span></div>
-        <div class="heat" title="최근 12개월 YoY">${cells}</div></div>`;
-    }
-  }
-  el.insertAdjacentHTML('beforeend',html);
+function rowHTML(c){
+  const isNew = c.dates[c.dates.length-1] === D.latest_month;
+  const yy = c.yoy.slice(-12), dd = c.dates.slice(-12);
+  const padded = Array(Math.max(0,12-yy.length)).fill(null).concat(yy);
+  const cells = padded.map((v,i)=>{
+    const d = dd[i-(12-yy.length)] || '';
+    return `<i style="background:${heatColor(v)}" title="${v==null?'':d+' '+pct(v)}"></i>`;
+  }).join('');
+  return `<div class="co ${c.code===S.code?'active':''}" data-code="${c.code}" onclick="pick('${c.code}')">
+    ${isNew?'<span class="pill">NEW</span>':''}
+    <div class="nm"><b>${c.name_ko||c.name_zh}</b><span class="num">${c.code}</span></div>
+    <div class="heat" title="최근 12개월 YoY">${cells}</div>
+    <span class="star ${FAVS.has(c.code)?'on':''}" onclick="toggleFav(event,'${c.code}')" title="즐겨찾기">★</span>
+  </div>`;
 }
 
-function pick(code){
-  S.code=code;
-  document.querySelectorAll('.co').forEach(e=>e.classList.toggle('active',e.dataset.code===code));
-  render();
+function sidebar(){
+  document.getElementById('genAt').textContent = `최신월 ${D.latest_month} · 갱신 ${D.generated_at}`;
+  const groups = {};
+  for (const c of D.companies) (groups[groupOf(c.sector)] ??= []).push(c);
+  groups['★ 즐겨찾기'] = D.companies.filter(c=>FAVS.has(c.code));
+  let html = '';
+  for (const g of GROUP_ORDER){
+    const list = groups[g];
+    if (!list || !list.length) continue;
+    html += `<div class="grp">${g} <small>${list.length}</small></div>`;
+    html += list.map(rowHTML).join('');
+  }
+  document.getElementById('colist').innerHTML = html;
 }
+
+function pick(code){ S.code=code; sidebar(); render(); }
 
 function slice(c){
   let i0=0;
   if(S.from){ i0=c.dates.findIndex(d=>d>=S.from); if(i0<0)i0=0; }
   const cut=a=>a.slice(i0);
-  return {dates:cut(c.dates),revenue:cut(c.revenue),yoy:cut(c.yoy),mom:cut(c.mom),
-          ma3:cut(c.ma3),ttm:cut(c.ttm),cum_yoy:cut(c.cum_yoy),record:cut(c.record)};
+  return {dates:cut(c.dates),revenue:cut(c.revenue),yoy:cut(c.yoy),ma3:cut(c.ma3),record:cut(c.record)};
 }
 
 function render(){
@@ -175,15 +206,16 @@ function render(){
     <div class="panel"><h3>최근 24개월</h3><div id="tbl"></div></div>`;
 
   S.charts.forEach(ch=>ch.destroy()); S.charts=[];
+  Chart.defaults.color='#697386'; Chart.defaults.borderColor='#E7EAEF';
   const scale=a=>a.map(x=>x==null?null:x/u.div);
 
   S.charts.push(new Chart(document.getElementById('ch1'),{
     data:{labels:v.dates,datasets:[
       {type:'bar',label:'월매출',data:scale(v.revenue),
-       backgroundColor:v.record.map(r=>r?'#B98A1F':'#2C4363'),yAxisID:'y',order:3},
-      {type:'line',label:'3M MA',data:scale(v.ma3),borderColor:'#8FA3BC',
+       backgroundColor:v.record.map(r=>r?'#C99A1F':'#2C4363'),yAxisID:'y',order:3},
+      {type:'line',label:'3M MA',data:scale(v.ma3),borderColor:'#9AA8BE',
        borderWidth:1.5,pointRadius:0,yAxisID:'y',order:2},
-      {type:'line',label:'YoY %',data:v.yoy,borderColor:'#C43C2E',borderWidth:2,
+      {type:'line',label:'YoY %',data:v.yoy,borderColor:'#D6453D',borderWidth:2,
        pointRadius:0,yAxisID:'y2',order:1}]},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
       scales:{y:{title:{display:true,text:u.label}},
@@ -191,11 +223,11 @@ function render(){
               x:{ticks:{maxTicksLimit:14}}},
       plugins:{legend:{labels:{boxWidth:12,font:{size:11}}}}}}));
 
-  // 연도별 오버레이
   const byYear={};
   v.dates.forEach((d,i)=>{const y=d.slice(0,4),m=+d.slice(5,7);
     (byYear[y]??=Array(12).fill(null))[m-1]=v.revenue[i]/u.div;});
-  const ys=Object.keys(byYear).sort(), palette=['#D8DCE2','#C4CAD3','#AEB7C4','#93A2B5','#7189A3','#4E6D8E','#2C4363','#C43C2E'];
+  const ys=Object.keys(byYear).sort(),
+        palette=['#DDE2EA','#C7CFDC','#AFBACC','#94A3BC','#7389A9','#4E6D8E','#2C4363','#D6453D'];
   S.charts.push(new Chart(document.getElementById('ch2'),{
     type:'line',
     data:{labels:['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
@@ -206,7 +238,6 @@ function render(){
       scales:{y:{title:{display:true,text:u.label}}},
       plugins:{legend:{labels:{boxWidth:12,font:{size:11}}}}}}));
 
-  // 테이블
   const rows=[];
   for(let i=c.dates.length-1;i>=Math.max(0,c.dates.length-24);i--){
     rows.push(`<tr><td class="num">${c.dates[i]}${c.record[i]?' ★':''}</td>
@@ -220,9 +251,9 @@ function render(){
     `<table><tr><th>월 (★=사상최대)</th><th>매출 (${u.label})</th><th>YoY</th><th>MoM</th><th>누계 YoY</th><th>TTM</th></tr>${rows.join('')}</table>`;
 }
 
-if(D&&D.companies&&D.companies.length){ sidebar(); pick(D.companies[0].code); }
+if(D&&D.companies&&D.companies.length){ S.code=D.companies[0].code; sidebar(); render(); }
 else document.getElementById('main').innerHTML=
-  '<div class="empty">데이터가 없습니다. collector.py → analyzer.py 를 실행해 docs/data.js 를 생성하세요.</div>';
+  '<div class="empty">아직 데이터가 없습니다. Actions에서 revenue-update를 실행하면 채워집니다.</div>';
 </script>
 </body>
 </html>
