@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>대만 월매출 트래커</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ibm-plex/6.4.0/css/ibm-plex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#F3F4F1; --surface:#FFFFFF; --ink:#181C22; --muted:#71767E;
+  --line:#E3E5E0; --bar:#2C4363; --bar-soft:#B9C6D8;
+  --up:#C43C2E; --dn:#1E7A63; --gold:#B98A1F;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);
+  font-family:"Pretendard",-apple-system,sans-serif;font-size:14px}
+.num{font-family:"IBM Plex Mono",monospace;font-feature-settings:"tnum"}
+.up{color:var(--up)} .dn{color:var(--dn)}
+
+.app{display:grid;grid-template-columns:300px 1fr;min-height:100vh}
+/* ---------- sidebar ---------- */
+aside{background:var(--ink);color:#E8EAE6;padding:20px 0;overflow-y:auto;
+  height:100vh;position:sticky;top:0}
+aside h1{font-size:16px;font-weight:800;letter-spacing:-.02em;padding:0 18px 2px}
+aside .sub{font-size:11px;color:#8B919B;padding:0 18px 14px}
+.co{display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;
+  border-left:3px solid transparent}
+.co:hover{background:#232833}
+.co.active{background:#2A3140;border-left-color:var(--up)}
+.co .nm{flex:1;min-width:0}
+.co .nm b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.co .nm span{font-size:10.5px;color:#8B919B}
+.heat{display:grid;grid-template-columns:repeat(12,7px);gap:2px}
+.heat i{width:7px;height:14px;border-radius:1px;background:#3A4150}
+.grp{font-size:10.5px;color:#7C828C;letter-spacing:.08em;padding:14px 18px 4px;
+  text-transform:uppercase}
+/* ---------- main ---------- */
+main{padding:26px 30px;max-width:1100px}
+.topbar{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:4px}
+.topbar h2{font-size:24px;font-weight:800;letter-spacing:-.03em}
+.topbar .zh{color:var(--muted);font-size:15px}
+.topbar .tag{font-size:11px;border:1px solid var(--line);background:var(--surface);
+  border-radius:99px;padding:2px 9px;color:var(--muted)}
+.meta{color:var(--muted);font-size:12px;margin-bottom:18px}
+.controls{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.controls select,.controls button{font:inherit;font-size:12.5px;padding:5px 10px;
+  border:1px solid var(--line);background:var(--surface);border-radius:6px;cursor:pointer}
+.controls .lbl{font-size:12px;color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:10px;margin-bottom:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.card .k{font-size:11px;color:var(--muted);margin-bottom:5px}
+.card .v{font-size:19px;font-weight:700}
+.card .v small{font-size:11px;font-weight:400;color:var(--muted)}
+.badge{display:inline-block;font-size:10.5px;font-weight:700;color:var(--gold);
+  border:1px solid var(--gold);border-radius:4px;padding:1px 6px;margin-left:6px;vertical-align:2px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;
+  padding:16px 18px;margin-bottom:16px}
+.panel h3{font-size:13px;font-weight:700;margin-bottom:10px;letter-spacing:-.01em}
+.chartbox{position:relative;height:320px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{font-size:11px;color:var(--muted);font-weight:600;text-align:right;
+  padding:6px 8px;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+td{padding:6px 8px;text-align:right;border-bottom:1px solid #EFF0ED}
+tr:hover td{background:#F7F8F5}
+.empty{color:var(--muted);padding:60px;text-align:center}
+@media(max-width:860px){.app{grid-template-columns:1fr}aside{height:auto;position:static}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside id="sidebar">
+    <h1>대만 월매출 트래커</h1>
+    <div class="sub" id="genAt">데이터 로딩 중…</div>
+  </aside>
+  <main id="main"><div class="empty">data.js 를 불러오는 중입니다…</div></main>
+</div>
+
+<script src="data.js"></script>
+<script>
+const D = window.REVENUE_DATA;
+const S = { code:null, unit:'b', from:null, charts:[] };
+const UNITS = { b:{div:1e6,label:'십억 NTD',dp:1}, e:{div:1e5,label:'억 NTD',dp:0}, k:{div:1,label:'천 NTD',dp:0} };
+const fmt=(v,dp=1)=>v==null?'–':v.toLocaleString('ko-KR',{minimumFractionDigits:dp,maximumFractionDigits:dp});
+const pct=v=>v==null?'–':(v>0?'+':'')+v.toFixed(1)+'%';
+const cls=v=>v==null?'':(v>=0?'up':'dn');
+const heatColor=v=>{
+  if(v==null)return '#3A4150';
+  const a=Math.min(Math.abs(v)/60,1)*.85+.15;
+  return v>=0?`rgba(214,86,70,${a})`:`rgba(46,150,122,${a})`;
+};
+
+function sidebar(){
+  const el=document.getElementById('sidebar');
+  document.getElementById('genAt').textContent=
+    `최신월 ${D.latest_month} · 생성 ${D.generated_at}`;
+  const bySector={};
+  D.companies.forEach(c=>{(bySector[c.sector||'기타']??=[]).push(c)});
+  let html='';
+  for(const [sec,list] of Object.entries(bySector)){
+    html+=`<div class="grp">${sec}</div>`;
+    for(const c of list){
+      const yy=c.yoy.slice(-12);
+      const padded=Array(Math.max(0,12-yy.length)).fill(null).concat(yy);
+      const cells=padded.map((v,i)=>{
+        const d=c.dates.slice(-12)[i-(12-yy.length)]||'';
+        return `<i style="background:${heatColor(v)}" title="${v==null?'':d+' '+pct(v)}"></i>`;
+      }).join('');
+      html+=`<div class="co" data-code="${c.code}" onclick="pick('${c.code}')">
+        <div class="nm"><b>${c.name_ko||c.name_zh}</b><span class="num">${c.code} · ${c.market.toUpperCase()}</span></div>
+        <div class="heat" title="최근 12개월 YoY">${cells}</div></div>`;
+    }
+  }
+  el.insertAdjacentHTML('beforeend',html);
+}
+
+function pick(code){
+  S.code=code;
+  document.querySelectorAll('.co').forEach(e=>e.classList.toggle('active',e.dataset.code===code));
+  render();
+}
+
+function slice(c){
+  let i0=0;
+  if(S.from){ i0=c.dates.findIndex(d=>d>=S.from); if(i0<0)i0=0; }
+  const cut=a=>a.slice(i0);
+  return {dates:cut(c.dates),revenue:cut(c.revenue),yoy:cut(c.yoy),mom:cut(c.mom),
+          ma3:cut(c.ma3),ttm:cut(c.ttm),cum_yoy:cut(c.cum_yoy),record:cut(c.record)};
+}
+
+function render(){
+  const c=D.companies.find(x=>x.code===S.code); if(!c)return;
+  const u=UNITS[S.unit], v=slice(c), n=c.dates.length-1;
+  const last={rev:c.revenue[n],yoy:c.yoy[n],mom:c.mom[n],cum:c.cum_yoy[n],
+              ttm:c.ttm[n],rec:c.record[n],date:c.dates[n]};
+  const ttmPrev=c.ttm[n-12], ttmYoY=(last.ttm&&ttmPrev)?(last.ttm/ttmPrev-1)*100:null;
+  const years=[...new Set(c.dates.map(d=>d.slice(0,4)))];
+
+  document.getElementById('main').innerHTML=`
+    <div class="topbar"><h2>${c.name_ko||c.name_zh}</h2>
+      <span class="zh">${c.name_zh}</span>
+      <span class="tag num">${c.code}.${c.market==='sii'?'TW':'TWO'}</span>
+      <span class="tag">${c.sector||''}</span></div>
+    <div class="meta">${last.date} 월매출 기준 ${last.rec?'<span class="badge">사상 최대 경신</span>':''}</div>
+    <div class="controls">
+      <span class="lbl">단위</span>
+      <select onchange="S.unit=this.value;render()">
+        ${Object.entries(UNITS).map(([k,x])=>`<option value="${k}" ${S.unit===k?'selected':''}>${x.label}</option>`).join('')}
+      </select>
+      <span class="lbl">시작 연도</span>
+      <select onchange="S.from=this.value||null;render()">
+        <option value="">전체</option>
+        ${years.map(y=>`<option value="${y}-01" ${S.from===y+'-01'?'selected':''}>${y}년~</option>`).join('')}
+      </select>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="k">${last.date} 매출</div>
+        <div class="v num">${fmt(last.rev/u.div,u.dp)} <small>${u.label}</small></div></div>
+      <div class="card"><div class="k">YoY</div>
+        <div class="v num ${cls(last.yoy)}">${pct(last.yoy)}</div></div>
+      <div class="card"><div class="k">MoM</div>
+        <div class="v num ${cls(last.mom)}">${pct(last.mom)}</div></div>
+      <div class="card"><div class="k">연누계 YoY</div>
+        <div class="v num ${cls(last.cum)}">${pct(last.cum)}</div></div>
+      <div class="card"><div class="k">TTM 매출 (YoY)</div>
+        <div class="v num">${fmt(last.ttm/u.div,u.dp)} <small class="num ${cls(ttmYoY)}">${pct(ttmYoY)}</small></div></div>
+    </div>
+    <div class="panel"><h3>월매출 · 3M 이동평균 · YoY</h3>
+      <div class="chartbox"><canvas id="ch1"></canvas></div></div>
+    <div class="panel"><h3>연도별 월매출 비교 (계절성)</h3>
+      <div class="chartbox"><canvas id="ch2"></canvas></div></div>
+    <div class="panel"><h3>최근 24개월</h3><div id="tbl"></div></div>`;
+
+  S.charts.forEach(ch=>ch.destroy()); S.charts=[];
+  const scale=a=>a.map(x=>x==null?null:x/u.div);
+
+  S.charts.push(new Chart(document.getElementById('ch1'),{
+    data:{labels:v.dates,datasets:[
+      {type:'bar',label:'월매출',data:scale(v.revenue),
+       backgroundColor:v.record.map(r=>r?'#B98A1F':'#2C4363'),yAxisID:'y',order:3},
+      {type:'line',label:'3M MA',data:scale(v.ma3),borderColor:'#8FA3BC',
+       borderWidth:1.5,pointRadius:0,yAxisID:'y',order:2},
+      {type:'line',label:'YoY %',data:v.yoy,borderColor:'#C43C2E',borderWidth:2,
+       pointRadius:0,yAxisID:'y2',order:1}]},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      scales:{y:{title:{display:true,text:u.label}},
+              y2:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:t=>t+'%'}},
+              x:{ticks:{maxTicksLimit:14}}},
+      plugins:{legend:{labels:{boxWidth:12,font:{size:11}}}}}}));
+
+  // 연도별 오버레이
+  const byYear={};
+  v.dates.forEach((d,i)=>{const y=d.slice(0,4),m=+d.slice(5,7);
+    (byYear[y]??=Array(12).fill(null))[m-1]=v.revenue[i]/u.div;});
+  const ys=Object.keys(byYear).sort(), palette=['#D8DCE2','#C4CAD3','#AEB7C4','#93A2B5','#7189A3','#4E6D8E','#2C4363','#C43C2E'];
+  S.charts.push(new Chart(document.getElementById('ch2'),{
+    type:'line',
+    data:{labels:['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
+      datasets:ys.map((y,i)=>({label:y,data:byYear[y],
+        borderColor:palette[Math.max(0,palette.length-ys.length+i)],
+        borderWidth:i===ys.length-1?2.5:1.5,pointRadius:i===ys.length-1?2.5:0}))},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{title:{display:true,text:u.label}}},
+      plugins:{legend:{labels:{boxWidth:12,font:{size:11}}}}}}));
+
+  // 테이블
+  const rows=[];
+  for(let i=c.dates.length-1;i>=Math.max(0,c.dates.length-24);i--){
+    rows.push(`<tr><td class="num">${c.dates[i]}${c.record[i]?' ★':''}</td>
+      <td class="num">${fmt(c.revenue[i]/u.div,u.dp)}</td>
+      <td class="num ${cls(c.yoy[i])}">${pct(c.yoy[i])}</td>
+      <td class="num ${cls(c.mom[i])}">${pct(c.mom[i])}</td>
+      <td class="num ${cls(c.cum_yoy[i])}">${pct(c.cum_yoy[i])}</td>
+      <td class="num">${fmt(c.ttm[i]/u.div,u.dp)}</td></tr>`);
+  }
+  document.getElementById('tbl').innerHTML=
+    `<table><tr><th>월 (★=사상최대)</th><th>매출 (${u.label})</th><th>YoY</th><th>MoM</th><th>누계 YoY</th><th>TTM</th></tr>${rows.join('')}</table>`;
+}
+
+if(D&&D.companies&&D.companies.length){ sidebar(); pick(D.companies[0].code); }
+else document.getElementById('main').innerHTML=
+  '<div class="empty">데이터가 없습니다. collector.py → analyzer.py 를 실행해 docs/data.js 를 생성하세요.</div>';
+</script>
+</body>
+</html>

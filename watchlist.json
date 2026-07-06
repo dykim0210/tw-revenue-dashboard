@@ -1,0 +1,27 @@
+{
+  "comment": "market: sii=상장(TWSE), otc=상장(TPEx). code는 문자열로 유지. 여기에 종목을 추가/삭제하면 수집·대시보드에 자동 반영됩니다.",
+  "companies": [
+    {"code": "2330", "market": "sii", "name_zh": "台積電",   "name_ko": "TSMC",            "sector": "파운드리"},
+    {"code": "2303", "market": "sii", "name_zh": "聯電",     "name_ko": "UMC",             "sector": "파운드리"},
+    {"code": "6770", "market": "sii", "name_zh": "力積電",   "name_ko": "PSMC",            "sector": "파운드리"},
+    {"code": "5347", "market": "otc", "name_zh": "世界先進", "name_ko": "Vanguard(VIS)",   "sector": "파운드리"},
+    {"code": "2454", "market": "sii", "name_zh": "聯發科",   "name_ko": "MediaTek",        "sector": "팹리스"},
+    {"code": "2379", "market": "sii", "name_zh": "瑞昱",     "name_ko": "Realtek",         "sector": "팹리스"},
+    {"code": "3034", "market": "sii", "name_zh": "聯詠",     "name_ko": "Novatek",         "sector": "팹리스"},
+    {"code": "3661", "market": "sii", "name_zh": "世芯-KY",  "name_ko": "Alchip",          "sector": "팹리스/ASIC"},
+    {"code": "3443", "market": "sii", "name_zh": "創意",     "name_ko": "GUC",             "sector": "팹리스/ASIC"},
+    {"code": "3529", "market": "otc", "name_zh": "力旺",     "name_ko": "eMemory",         "sector": "IP"},
+    {"code": "5274", "market": "otc", "name_zh": "信驊",     "name_ko": "Aspeed",          "sector": "팹리스(BMC)"},
+    {"code": "8299", "market": "otc", "name_zh": "群聯",     "name_ko": "Phison",          "sector": "NAND 컨트롤러"},
+    {"code": "2408", "market": "sii", "name_zh": "南亞科",   "name_ko": "Nanya Tech",      "sector": "메모리(DRAM)"},
+    {"code": "2344", "market": "sii", "name_zh": "華邦電",   "name_ko": "Winbond",         "sector": "메모리"},
+    {"code": "3711", "market": "sii", "name_zh": "日月光投控","name_ko": "ASE Holdings",    "sector": "OSAT"},
+    {"code": "6239", "market": "sii", "name_zh": "力成",     "name_ko": "PTI",             "sector": "OSAT"},
+    {"code": "3105", "market": "otc", "name_zh": "穩懋",     "name_ko": "WIN Semi",        "sector": "화합물반도체"},
+    {"code": "6669", "market": "sii", "name_zh": "緯穎",     "name_ko": "Wiwynn",          "sector": "AI서버"},
+    {"code": "2382", "market": "sii", "name_zh": "廣達",     "name_ko": "Quanta",          "sector": "AI서버/ODM"},
+    {"code": "2317", "market": "sii", "name_zh": "鴻海",     "name_ko": "Hon Hai(폭스콘)",  "sector": "EMS"},
+    {"code": "3231", "market": "sii", "name_zh": "緯創",     "name_ko": "Wistron",         "sector": "AI서버/ODM"},
+    {"code": "3008", "market": "sii", "name_zh": "大立光",   "name_ko": "Largan",          "sector": "광학"}
+  ]
+}
