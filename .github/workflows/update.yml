@@ -1,0 +1,31 @@
+yamlname: 월매출 자동 수집
+
+on:
+  schedule:
+    # 대만 상장사 공시 마감은 매월 10일. 공시가 몰리는 5~13일에 매일 KST 21:00(UTC 12:00) 실행
+    - cron: "0 12 5-13 * *"
+  workflow_dispatch:        # 수동 실행 버튼
+
+permissions:
+  contents: write
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pandas lxml pyarrow requests
+      - name: 수집 (증분)
+        run: python collector.py
+      - name: 분석 + 대시보드 데이터 생성
+        run: python analyzer.py
+      - name: 변경분 커밋
+        run: |
+          git config user.name "revenue-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add data/ docs/data.js
+          git diff --cached --quiet || git commit -m "data: $(date +'%Y-%m-%d') 월매출 업데이트"
+          git push
